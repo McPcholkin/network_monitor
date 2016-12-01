@@ -7,30 +7,31 @@
 #
 # ----------------------------------------
 
-unreachable_hosts= # number of unrechable hosts
+# Hosts list
+host0=yandex.ua
+host1=google.com.ua
+host2=ns.volia.com
+host3=amazon.com
+host4=ukrtelecom.ua
+
+number_of_hosts=5   # nunber of used hosts
 
 number_of_packets=2 # how mach pactets to send
 check_interval=2    # how freq to check connection
 boot_time=1         # time to wait after modem reboot
 
-# Hosts list
-host0=yandex.ua
-host1=google.com.ua
-host2=ns.volia.com
-host3=microsoft.com
-host4=ukrtelecom.ua
+unreachable_hosts=0 # initialize variable
 
-number_of_hosts=5
 
 # main function
 pinger () { # ping hosts from array
    ARRAY=($@) # include all arguments that send to function in array
-   echo $@    # debug
+#   echo $@    # debug
    i=0        # initialize counter
 
    while [ "$#" -gt $i ]   # compare counter with number of arguments
     do 
-      echo "argument number $i = ${ARRAY[$i]}" # debug
+#      echo "argument number $i = ${ARRAY[$i]}" # debug
 
       ping -c $number_of_packets -q ${ARRAY[$i]} 2>1 1>/dev/null # ping host number "i" in array
         if
