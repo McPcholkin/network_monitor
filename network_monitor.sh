@@ -16,11 +16,19 @@ host4=ukrtelecom.ua
 
 number_of_hosts=5   # nunber of used hosts
 
+# Ping settings
 number_of_packets=2 # how mach pactets to send
 check_interval=2    # how freq to check connection
 boot_time=1         # time to wait after modem reboot
 
 unreachable_hosts=0 # initialize variable
+
+
+# Telnet settings
+router_ip='192.168.1.1'
+user='root'
+password='admin'
+cmd='reboot'
 
 
 # main function
@@ -37,9 +45,10 @@ pinger () { # ping hosts from array
         if
           [ "$?" = 0 ] # if exit code of ping are zero
             then       # all OK 
-                echo "${ARRAY[$i]} is reachable" # debug 
+#                echo "${ARRAY[$i]} is reachable" # debug 
+                echo > /dev/null
             else       # host unreachable (exit code is 2)
-                echo "${ARRAY[$i]} is NOT reachable" # debug
+#                echo "${ARRAY[$i]} is NOT reachable" # debug
                 let unreachable_hosts=$unreachable_hosts+1 # increase counter of unreachable hosts
         fi
 
@@ -58,9 +67,23 @@ while true
           then # reboot modem
             echo "Network connettion is lost, we all die" # debug
             echo "Reboot modem and wait 5 min"            # debug
+              
+              # send commands to stdin telnet
+              (  
+                echo open "$router_ip"
+                sleep 2
+                echo "$user"
+                sleep 2
+                echo "$password"
+                sleep 2
+                echo "$cmd"
+                sleep 2
+              ) | telnet               
+
             sleep $boot_time  # wait until modem reboot
           else # all ok
             echo "All OK Internet is work" # debug
+            echo > /dev/null
     fi
 
     let unreachable_hosts=0 # reset unreacable host counter
