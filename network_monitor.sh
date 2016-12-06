@@ -4,6 +4,7 @@
 #
 # Reboot ADSL Modem if connetcito to 5 of 5 hosts
 # not respond to ping
+# by McPcholkin
 #
 # ----------------------------------------
 
@@ -17,18 +18,18 @@ host4=ukrtelecom.ua
 number_of_hosts=5   # nunber of used hosts
 
 # Ping settings
-number_of_packets=2 # how mach pactets to send
-check_interval=2    # how freq to check connection
-boot_time=1         # time to wait after modem reboot
+number_of_packets=10 # how mach pactets to send
+check_interval="30m"    # how freq to check connection
+boot_time=200         # time to wait after modem reboot
 
 unreachable_hosts=0 # initialize variable
 
 
 # Telnet settings
-router_ip='192.168.1.1'
-user='root'
+router_ip='192.168.40.1'
+#user='root'
 password='admin'
-cmd='reboot'
+cmd='sys reboot'
 
 
 # main function
@@ -41,7 +42,7 @@ pinger () { # ping hosts from array
     do 
 #      echo "argument number $i = ${ARRAY[$i]}" # debug
 
-      ping -c $number_of_packets -q ${ARRAY[$i]} 2>1 1>/dev/null # ping host number "i" in array
+      ping -c $number_of_packets -q ${ARRAY[$i]} 2>/dev/null 1>/dev/null # ping host number "i" in array
         if
           [ "$?" = 0 ] # if exit code of ping are zero
             then       # all OK 
@@ -60,19 +61,17 @@ pinger () { # ping hosts from array
 while true 
   do
     pinger $host0 $host1 $host2 $host3 $host4  # select host to ping
-    echo "Number of unreachable hosts: $unreachable_hosts of $number_of_hosts" # debug
+#    echo "Number of unreachable hosts: $unreachable_hosts of $number_of_hosts" # debug
 
       if # Check unreaceble host counter
         [ "$unreachable_hosts" -eq "$number_of_hosts" ] # if ALL hosts unreachable reboot modem
           then # reboot modem
-            echo "Network connettion is lost, we all die" # debug
-            echo "Reboot modem and wait 5 min"            # debug
+#            echo "Network connettion is lost, we all die" # debug
+#            echo "Reboot modem and wait 5 min"            # debug
               
               # send commands to stdin telnet
               (  
                 echo open "$router_ip"
-                sleep 2
-                echo "$user"
                 sleep 2
                 echo "$password"
                 sleep 2
@@ -81,9 +80,12 @@ while true
               ) | telnet               
 
             sleep $boot_time  # wait until modem reboot
+            logger "$(date +%Y-%m-%d\_%H-%M-%S) Network Monitor - internet is dead, reboot modem"
+
           else # all ok
-            echo "All OK Internet is work" # debug
-            echo > /dev/null
+#            echo "All OK Internet is work" # debug
+#            echo > /dev/null
+            logger "$(date +%Y-%m-%d\_%H-%M-%S) Network Monitor - All OK"
     fi
 
     let unreachable_hosts=0 # reset unreacable host counter
